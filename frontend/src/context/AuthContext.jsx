@@ -16,10 +16,10 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      fetchProfile(session?.user?.id);
+      await fetchProfile(session?.user?.id);  // wait for role before unlocking routes
       setLoading(false);
     });
 
