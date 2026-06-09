@@ -11,8 +11,9 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async (userId) => {
     if (!userId) { setProfile(null); return; }
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    setProfile(data ?? null);
+    // Use RPC to bypass RLS — reliable regardless of policy config
+    const { data: role } = await supabase.rpc('get_my_role');
+    setProfile({ id: userId, role: role ?? 'customer' });
   };
 
   useEffect(() => {
