@@ -1,0 +1,13 @@
+# Environment files — NEVER commit secrets
+.env
+.env.*
+!.env.example
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea

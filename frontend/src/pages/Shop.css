@@ -1,0 +1,164 @@
+.shop-header {
+  background: var(--clr-bg-2);
+  border-bottom: 1px solid var(--clr-border);
+  padding: var(--space-8) 0;
+}
+.shop-header-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.shop-title { font-size: clamp(1.5rem, 3vw, 2.5rem); margin-top: var(--space-2); }
+.shop-controls { display: flex; align-items: center; gap: var(--space-3); }
+
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--clr-border-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--clr-text-2);
+  transition: all var(--transition);
+  position: relative;
+}
+.filter-toggle-btn:hover, .filter-toggle-btn.active { border-color: var(--clr-gold); color: var(--clr-gold); }
+.filter-badge {
+  background: var(--clr-gold);
+  color: #0a0a0a;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+.sort-select { min-width: 180px; padding: 0.6rem 1rem; }
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.3rem 0.75rem;
+  background: var(--clr-gold-muted);
+  border: 1px solid var(--clr-gold);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  color: var(--clr-gold);
+}
+.filter-chip button { color: var(--clr-gold); display: flex; }
+.clear-filters-btn {
+  font-size: 0.75rem;
+  color: var(--clr-text-3);
+  text-decoration: underline;
+  padding: 0.3rem 0.5rem;
+  transition: color var(--transition);
+}
+.clear-filters-btn:hover { color: var(--clr-text); }
+
+.shop-body {
+  display: flex;
+  gap: var(--space-8);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+  align-items: flex-start;
+}
+
+/* Sidebar */
+.filter-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: sticky;
+  top: 90px;
+}
+
+.filter-section { border-bottom: 1px solid var(--clr-border); }
+.filter-section:last-child { border-bottom: none; }
+.filter-section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clr-text-2);
+  transition: color var(--transition);
+}
+.filter-section-header:hover { color: var(--clr-gold); }
+.filter-section-body { padding: 0 var(--space-4) var(--space-4); }
+
+.filter-options { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter-option {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--clr-text-2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.filter-option:hover { background: var(--clr-gold-muted); color: var(--clr-gold); }
+.filter-option.active { background: var(--clr-gold-muted); color: var(--clr-gold); font-weight: 500; }
+
+.filter-sizes { flex-direction: row; flex-wrap: wrap; gap: var(--space-2); }
+.filter-size-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--clr-border-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--clr-text-2);
+  transition: all var(--transition);
+}
+.filter-size-btn:hover, .filter-size-btn.active { border-color: var(--clr-gold); color: var(--clr-gold); background: var(--clr-gold-muted); }
+
+.price-range-inputs { display: flex; align-items: center; gap: var(--space-2); }
+.price-range-sep { color: var(--clr-text-3); font-size: 0.8rem; }
+.price-range-inputs .form-input { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+
+/* Products */
+.shop-products { flex: 1; min-width: 0; }
+.shop-products.with-sidebar {}
+
+.shop-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 300px;
+  color: var(--clr-text-2);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+}
+
+@media (max-width: 768px) {
+  .shop-body { flex-direction: column; }
+  .filter-sidebar { width: 100%; position: static; }
+  .shop-header-content { align-items: flex-start; }
+}
