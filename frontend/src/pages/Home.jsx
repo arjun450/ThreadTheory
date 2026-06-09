@@ -177,8 +177,8 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center" style={{padding:'var(--space-16) 0',color:'var(--clr-text-2)'}}>
-              <p>Add your first products to get started!</p>
-              <Link to="/admin" className="btn btn-outline" style={{marginTop:'var(--space-4)'}}>Admin Panel →</Link>
+              <p>New arrivals coming soon. Check back shortly!</p>
+              <Link to="/shop" className="btn btn-outline" style={{marginTop:'var(--space-4)'}}>Browse All Products →</Link>
             </div>
           )}
 

@@ -6,18 +6,27 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (userId) => {
+    if (!userId) { setProfile(null); return; }
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    setProfile(data ?? null);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      fetchProfile(session?.user?.id);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      fetchProfile(session?.user?.id);
     });
 
     return () => subscription.unsubscribe();
@@ -55,8 +64,10 @@ export function AuthProvider({ children }) {
     return data.session?.access_token;
   };
 
+  const isAdmin = profile?.role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut, getToken }}>
+    <AuthContext.Provider value={{ user, session, profile, isAdmin, loading, signUp, signIn, signInWithGoogle, signOut, getToken }}>
       {children}
     </AuthContext.Provider>
   );
