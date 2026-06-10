@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, ChevronDown, ChevronUp, X, MapPin, CreditCard } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, X, MapPin, CreditCard, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -12,7 +12,11 @@ const STATUS_COLORS = {
   cancelled: 'badge-error', refunded: 'badge-error',
 };
 
+const TIMELINE_STEPS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+const TIMELINE_LABELS = { pending: 'Ordered', confirmed: 'Confirmed', processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered' };
+
 const CANCELLABLE = ['pending', 'confirmed'];
+
 
 export default function Orders() {
   const { user, getToken } = useAuth();
@@ -97,6 +101,30 @@ export default function Orders() {
                       style={{ overflow: 'hidden' }}
                     >
                       <div style={{ borderTop: '1px solid var(--clr-border)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+
+                        {/* Status Timeline */}
+                        {!['cancelled', 'refunded'].includes(order.status) && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, flexWrap: 'wrap', padding: 'var(--space-2) 0' }}>
+                            {TIMELINE_STEPS.map((step, i) => {
+                              const stepIdx = TIMELINE_STEPS.indexOf(order.status);
+                              const done = i <= stepIdx;
+                              const active = i === stepIdx;
+                              return (
+                                <div key={step} style={{ display: 'flex', alignItems: 'center' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: done ? 'var(--clr-gold)' : 'var(--clr-surface-2)', border: active ? '2px solid var(--clr-gold)' : '2px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
+                                      {done ? <Check size={14} color="#000" /> : <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--clr-text-muted)' }} />}
+                                    </div>
+                                    <span style={{ fontSize: '0.65rem', color: done ? 'var(--clr-gold)' : 'var(--clr-text-muted)', whiteSpace: 'nowrap' }}>{TIMELINE_LABELS[step]}</span>
+                                  </div>
+                                  {i < TIMELINE_STEPS.length - 1 && (
+                                    <div style={{ width: 40, height: 2, background: i < stepIdx ? 'var(--clr-gold)' : 'var(--clr-surface-2)', margin: '0 4px', marginBottom: 18, transition: 'background 0.3s' }} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
 
                         {/* Items */}
                         {order.order_items?.length > 0 && (

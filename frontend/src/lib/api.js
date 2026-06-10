@@ -20,6 +20,9 @@ export const getFeaturedProducts = () =>
   fetch(`${API_URL}/products/featured`).then(handleResponse);
 export const getProduct = (slug) =>
   fetch(`${API_URL}/products/${slug}`).then(handleResponse);
+export const getRelatedProducts = (slug) =>
+  fetch(`${API_URL}/products/${slug}/related`).then(handleResponse);
+
 
 // Categories
 export const getCategories = () =>

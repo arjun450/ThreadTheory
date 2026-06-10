@@ -58,6 +58,22 @@ router.get('/featured', async (req, res) => {
   res.json(data);
 });
 
+// GET /api/products/:slug/related
+router.get('/:slug/related', async (req, res) => {
+  const { data: product } = await supabase
+    .from('products').select('id, category_id').eq('slug', req.params.slug).single();
+  if (!product) return res.json([]);
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(name, slug), product_images(url, is_primary), product_variants(id, size, color, stock_qty)')
+    .eq('category_id', product.category_id)
+    .eq('is_active', true)
+    .neq('id', product.id)
+    .limit(4);
+  if (error) return res.json([]);
+  res.json(data);
+});
+
 // GET /api/products/:slug
 router.get('/:slug', async (req, res) => {
   const { data, error } = await supabase

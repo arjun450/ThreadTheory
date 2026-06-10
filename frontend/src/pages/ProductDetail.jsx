@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Heart, Star, ChevronLeft, Check, Truck, RotateCcw } from 'lucide-react';
+import { ShoppingBag, Heart, Star, ChevronLeft, Check, Truck, RotateCcw, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getProduct } from '../lib/api';
+import { getProduct, createReview, getRelatedProducts } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import ProductCard from '../components/ProductCard';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -20,6 +21,11 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [qty, setQty] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [related, setRelated] = useState([]);
+  const [reviewForm, setReviewForm] = useState({ rating: 0, title: '', body: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [hoverStar, setHoverStar] = useState(0);
   const { addItem } = useCart();
   const { toggle, isWishlisted } = useWishlist();
   const { user } = useAuth();
@@ -29,6 +35,7 @@ export default function ProductDetail() {
     setLoading(true);
     getProduct(slug).then(data => {
       setProduct(data);
+      setReviews(data.reviews || []);
       document.title = `${data.name} | ThreadTheory`;
       const firstInStock = data.product_variants?.find(v => v.stock_qty > 0);
       const defaultVariant = firstInStock || data.product_variants?.[0];
@@ -36,6 +43,7 @@ export default function ProductDetail() {
       setSelectedSize(defaultVariant?.size ?? null);
       setSelectedColor(defaultVariant?.color ?? null);
     }).catch(() => navigate('/shop')).finally(() => setLoading(false));
+    getRelatedProducts(slug).then(setRelated).catch(() => {});
   }, [slug, navigate]);
 
   if (loading) return <div style={{ minHeight: '100vh', paddingTop: 80 }} className="flex items-center justify-center"><div className="skeleton" style={{ width: 40, height: 40, borderRadius: '50%' }} /></div>;
@@ -91,6 +99,27 @@ export default function ProductDetail() {
     if (!user) { toast.info('Please sign in to save items'); return; }
     const result = await toggle(product.id);
     toast.success(result?.action === 'added' ? 'Saved to wishlist ♡' : 'Removed from wishlist');
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewForm.rating) { toast.error('Please select a star rating'); return; }
+    setSubmittingReview(true);
+    try {
+      const token = await getToken();
+      const newReview = await createReview(token, { product_id: product.id, ...reviewForm });
+      setReviews(prev => {
+        const idx = prev.findIndex(r => r.user_id === newReview.user_id);
+        if (idx >= 0) { const next = [...prev]; next[idx] = newReview; return next; }
+        return [newReview, ...prev];
+      });
+      setReviewForm({ rating: 0, title: '', body: '' });
+      toast.success('Review submitted! ⭐');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   return (
@@ -231,13 +260,14 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Reviews */}
-        {product.reviews?.length > 0 && (
-          <section className="reviews-section" id="reviews">
-            <div className="divider-gold" />
-            <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>Customer Reviews</h2>
-            <div className="reviews-grid">
-              {product.reviews.map(r => (
+        {/* Reviews + Write a Review */}
+        <section className="reviews-section" id="reviews">
+          <div className="divider-gold" />
+          <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>Customer Reviews</h2>
+
+          {reviews.length > 0 ? (
+            <div className="reviews-grid" style={{ marginBottom: 'var(--space-10)' }}>
+              {reviews.map(r => (
                 <div key={r.id} className="review-card card">
                   <div className="review-header">
                     <div className="stars">{Array(5).fill(0).map((_, i) => <Star key={i} size={12} fill={i < r.rating ? 'currentColor' : 'none'} className={i < r.rating ? 'star' : 'star-empty'} />)}</div>
@@ -248,6 +278,51 @@ export default function ProductDetail() {
                   <p className="review-author">{r.profiles?.full_name || 'Anonymous'}</p>
                 </div>
               ))}
+            </div>
+          ) : (
+            <p className="text-muted" style={{ textAlign: 'center', marginBottom: 'var(--space-10)' }}>No reviews yet. Be the first to review!</p>
+          )}
+
+          {/* Review form */}
+          {user ? (
+            <form onSubmit={handleReviewSubmit} style={{ maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <h3 className="font-serif" style={{ textAlign: 'center', fontSize: '1.3rem' }}>Write a Review</h3>
+              {/* Star picker */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                {Array(5).fill(0).map((_, i) => (
+                  <button
+                    key={i} type="button"
+                    onMouseEnter={() => setHoverStar(i + 1)}
+                    onMouseLeave={() => setHoverStar(0)}
+                    onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
+                    aria-label={`Rate ${i + 1} stars`}
+                  >
+                    <Star size={28} fill={(hoverStar || reviewForm.rating) > i ? 'var(--clr-gold)' : 'none'} color={(hoverStar || reviewForm.rating) > i ? 'var(--clr-gold)' : 'var(--clr-text-muted)'} />
+                  </button>
+                ))}
+              </div>
+              <input className="form-input" placeholder="Review title (optional)" value={reviewForm.title} onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))} maxLength={100} />
+              <textarea className="form-input" placeholder="Share your experience with this product..." value={reviewForm.body} onChange={e => setReviewForm(f => ({ ...f, body: e.target.value }))} rows={4} maxLength={600} style={{ resize: 'vertical' }} />
+              <button type="submit" className="btn btn-primary" disabled={submittingReview || !reviewForm.rating} id="submit-review-btn" style={{ alignSelf: 'center', gap: 8 }}>
+                <Send size={14} />
+                {submittingReview ? 'Submitting...' : 'Submit Review'}
+              </button>
+            </form>
+          ) : (
+            <p className="text-muted" style={{ textAlign: 'center' }}>
+              <Link to="/auth" className="text-gold">Sign in</Link> to leave a review.
+            </p>
+          )}
+        </section>
+
+        {/* Related Products */}
+        {related.length > 0 && (
+          <section style={{ marginTop: 'var(--space-16)' }}>
+            <div className="divider-gold" />
+            <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>You May Also Like</h2>
+            <div className="product-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+              {related.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </section>
         )}

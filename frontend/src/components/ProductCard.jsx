@@ -32,6 +32,8 @@ export default function ProductCard({ product }) {
   const discountPct = hasDiscount ? Math.round((1 - product.sale_price / product.price) * 100) : 0;
 
   const availableSizes = [...new Set(product?.product_variants?.filter(v => v.stock_qty > 0).map(v => v.size))];
+  const totalStock = product?.product_variants?.reduce((sum, v) => sum + (v.stock_qty || 0), 0) || 0;
+  const isLowStock = totalStock > 0 && totalStock <= 5;
   const avgRating = product?.reviews?.length
     ? (product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length).toFixed(1)
     : null;
@@ -79,6 +81,7 @@ export default function ProductCard({ product }) {
         <div className="product-card-badges">
           {hasDiscount && <span className="badge badge-gold">-{discountPct}%</span>}
           {availableSizes.length === 0 && <span className="badge badge-error">Sold Out</span>}
+          {isLowStock && <span className="badge" style={{ background: 'rgba(220,80,60,0.85)', color: '#fff' }}>Only {totalStock} left!</span>}
         </div>
 
         {/* Wishlist */}
