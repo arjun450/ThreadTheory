@@ -65,7 +65,7 @@ router.get('/orders', async (req, res) => {
   const offset = (page - 1) * limit;
   let query = supabase
     .from('orders')
-    .select(`*, profiles(full_name), order_items(*)`, { count: 'exact' })
+    .select(`*, order_items(*)`, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + Number(limit) - 1);
   if (status) query = query.eq('status', status);
