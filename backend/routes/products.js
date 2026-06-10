@@ -67,7 +67,7 @@ router.get('/:slug', async (req, res) => {
       categories(id, name, slug),
       product_images(id, url, alt_text, is_primary, display_order),
       product_variants(id, size, color, color_hex, stock_qty, sku),
-      reviews(id, rating, title, body, created_at, profiles(full_name, avatar_url))
+      reviews(id, rating, title, body, created_at)
     `)
     .eq('slug', req.params.slug)
     .eq('is_active', true)
