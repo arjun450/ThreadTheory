@@ -44,6 +44,9 @@ export const getOrder = (token, id) =>
   fetch(`${API_URL}/orders/${id}`, { headers: getHeaders(token) }).then(handleResponse);
 export const createOrder = (token, body) =>
   fetch(`${API_URL}/orders`, { method: 'POST', headers: getHeaders(token), body: JSON.stringify(body) }).then(handleResponse);
+export const cancelOrder = (token, id) =>
+  fetch(`${API_URL}/orders/${id}/cancel`, { method: 'PATCH', headers: getHeaders(token) }).then(handleResponse);
+
 
 // Wishlist
 export const getWishlist = (token) =>

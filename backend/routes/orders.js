@@ -85,4 +85,38 @@ router.post('/', async (req, res) => {
   res.status(201).json(order);
 });
 
+// PATCH /api/orders/:id/cancel
+router.patch('/:id/cancel', async (req, res) => {
+  const { data: order, error: findError } = await supabase
+    .from('orders')
+    .select('*, order_items(*)')
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id)
+    .single();
+  if (findError || !order) return res.status(404).json({ error: 'Order not found' });
+  if (!['pending', 'confirmed'].includes(order.status)) {
+    return res.status(400).json({ error: 'Only pending or confirmed orders can be cancelled' });
+  }
+
+  // Restore stock for each item
+  for (const item of order.order_items) {
+    const { data: variant } = await supabase
+      .from('product_variants').select('stock_qty').eq('id', item.variant_id).single();
+    if (variant) {
+      await supabase.from('product_variants')
+        .update({ stock_qty: variant.stock_qty + item.quantity })
+        .eq('id', item.variant_id);
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 module.exports = router;
