@@ -16,6 +16,8 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImg, setSelectedImg] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [qty, setQty] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
   const { addItem } = useCart();
@@ -28,9 +30,11 @@ export default function ProductDetail() {
     getProduct(slug).then(data => {
       setProduct(data);
       document.title = `${data.name} | ThreadTheory`;
-      // Default to first in-stock variant
       const firstInStock = data.product_variants?.find(v => v.stock_qty > 0);
-      setSelectedVariant(firstInStock || data.product_variants?.[0]);
+      const defaultVariant = firstInStock || data.product_variants?.[0];
+      setSelectedVariant(defaultVariant);
+      setSelectedSize(defaultVariant?.size ?? null);
+      setSelectedColor(defaultVariant?.color ?? null);
     }).catch(() => navigate('/shop')).finally(() => setLoading(false));
   }, [slug, navigate]);
 
@@ -43,8 +47,7 @@ export default function ProductDetail() {
 
   const sizes = [...new Set(product.product_variants?.map(v => v.size))];
   const colors = [...new Map(product.product_variants?.filter(v => v.color).map(v => [v.color, v])).values()];
-  const [selectedSize, setSelectedSize] = useState(selectedVariant?.size);
-  const [selectedColor, setSelectedColor] = useState(selectedVariant?.color);
+
 
   const getVariant = (size, color) => product.product_variants?.find(v =>
     (!size || v.size === size) && (!color || v.color === color)
